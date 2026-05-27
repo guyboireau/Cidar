@@ -120,8 +120,7 @@ export default function PublicStatus() {
               {monitors.map(m => (
                 <div key={m.id} className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <p className="text-sm font-medium">{m.name}</p>
-                    <p className="text-[11px] text-muted-foreground">{m.url}</p>
+                    <p className="text-sm font-medium">{m.public_name || m.name}</p>
                     {m.last_checked_at && <p className="text-[11px] text-muted-foreground">{formatRelative(m.last_checked_at)}{m.last_response_ms ? ` · ${m.last_response_ms}ms` : ''}</p>}
                   </div>
                   <div className="flex items-center gap-2">
