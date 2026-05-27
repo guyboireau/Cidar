@@ -32,3 +32,10 @@ dist-ssr
 supabase/.temp/
 supabase/.branches/
 .vercel
+
+# Claude Code & local tools
+ruvector.db
+agentdb.rvf
+agentdb.rvf.lock
+SECURITY_AUDIT.md
+SECURITY_REVIEW_POST_FIX.md

@@ -88,6 +88,7 @@ export interface HttpMonitor {
   project_id: string | null
   name: string
   url: string
+  public_name: string | null
   expected_status: number
   interval_minutes: number
   enabled: boolean

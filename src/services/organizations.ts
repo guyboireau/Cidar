@@ -1,6 +1,36 @@
 import { supabase } from '@/lib/supabase'
 import type { Organization, OrgMember, Invitation, OrgRole, OrgWithPlan } from '@/types'
 
+async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) throw new Error('Non authentifié')
+  return user
+}
+
+const ROLE_HIERARCHY: Record<OrgRole, number> = { owner: 3, admin: 2, member: 1 }
+
+async function assertOrgAccess(orgId: string, minRole: OrgRole = 'member'): Promise<void> {
+  const user = await getCurrentUser()
+
+  // Ownership bypasses role checks
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('owner_id')
+    .eq('id', orgId)
+    .single()
+  if (org?.owner_id === user.id) return
+
+  const { data: member } = await supabase
+    .from('organization_members')
+    .select('role')
+    .eq('org_id', orgId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (member && ROLE_HIERARCHY[member.role] >= ROLE_HIERARCHY[minRole]) return
+  throw new Error('Accès interdit')
+}
+
 export async function getUserOrgs(userId: string): Promise<OrgWithPlan[]> {
   // Fetch owned orgs
   const { data: owned, error: ownedErr } = await supabase
@@ -33,6 +63,7 @@ export async function getUserOrgs(userId: string): Promise<OrgWithPlan[]> {
 }
 
 export async function getOrg(orgId: string): Promise<OrgWithPlan> {
+  await assertOrgAccess(orgId, 'member')
   const { data, error } = await supabase
     .from('org_with_plan')
     .select('*')
@@ -59,6 +90,7 @@ export async function createOrg(name: string, ownerId: string): Promise<Organiza
 }
 
 export async function updateOrg(orgId: string, updates: { name?: string }): Promise<Organization> {
+  await assertOrgAccess(orgId, 'admin')
   const { data, error } = await supabase
     .from('organizations')
     .update(updates)
@@ -80,6 +112,7 @@ export async function setCurrentOrg(userId: string, orgId: string): Promise<void
 // Members
 
 export async function getOrgMembers(orgId: string): Promise<OrgMember[]> {
+  await assertOrgAccess(orgId, 'member')
   const { data, error } = await supabase
     .from('organization_members')
     .select('*, profiles(name, email, avatar_url)')
@@ -90,6 +123,7 @@ export async function getOrgMembers(orgId: string): Promise<OrgMember[]> {
 }
 
 export async function removeMember(orgId: string, userId: string): Promise<void> {
+  await assertOrgAccess(orgId, 'admin')
   const { error } = await supabase
     .from('organization_members')
     .delete()
@@ -99,6 +133,7 @@ export async function removeMember(orgId: string, userId: string): Promise<void>
 }
 
 export async function updateMemberRole(orgId: string, userId: string, role: OrgRole): Promise<void> {
+  await assertOrgAccess(orgId, 'admin')
   const { error } = await supabase
     .from('organization_members')
     .update({ role })
@@ -110,6 +145,7 @@ export async function updateMemberRole(orgId: string, userId: string, role: OrgR
 // Invitations
 
 export async function getInvitations(orgId: string): Promise<Invitation[]> {
+  await assertOrgAccess(orgId, 'admin')
   const { data, error } = await supabase
     .from('invitations')
     .select('*')
@@ -127,9 +163,11 @@ export async function inviteMember(
   role: 'admin' | 'member',
   invitedBy: string
 ): Promise<Invitation> {
+  await assertOrgAccess(orgId, 'admin')
+  const token = crypto.randomUUID()
   const { data, error } = await supabase
     .from('invitations')
-    .insert({ org_id: orgId, email, role, invited_by: invitedBy })
+    .insert({ org_id: orgId, email, role, invited_by: invitedBy, token })
     .select()
     .single()
   if (error) throw error
@@ -137,6 +175,14 @@ export async function inviteMember(
 }
 
 export async function revokeInvitation(invitationId: string): Promise<void> {
+  const user = await getCurrentUser()
+  const { data: invitation } = await supabase
+    .from('invitations')
+    .select('org_id')
+    .eq('id', invitationId)
+    .single()
+  if (!invitation) throw new Error('Invitation introuvable')
+  await assertOrgAccess(invitation.org_id, 'admin')
   const { error } = await supabase
     .from('invitations')
     .delete()
@@ -144,7 +190,9 @@ export async function revokeInvitation(invitationId: string): Promise<void> {
   if (error) throw error
 }
 
-export async function acceptInvitation(token: string, userId: string): Promise<{ org_id: string }> {
+export async function acceptInvitation(token: string): Promise<{ org_id: string }> {
+  const user = await getCurrentUser()
+
   const { data: invitation, error: fetchError } = await supabase
     .from('invitations')
     .select('*')
@@ -155,10 +203,15 @@ export async function acceptInvitation(token: string, userId: string): Promise<{
 
   if (fetchError || !invitation) throw new Error('Invitation invalide ou expirée')
 
+  // Verify the accepting user matches the invited email
+  if (invitation.email !== user.email) {
+    throw new Error("Cette invitation ne vous est pas destinée")
+  }
+
   // Add member
   const { error: memberError } = await supabase
     .from('organization_members')
-    .upsert({ org_id: invitation.org_id, user_id: userId, role: invitation.role }, { onConflict: 'org_id,user_id' })
+    .upsert({ org_id: invitation.org_id, user_id: user.id, role: invitation.role }, { onConflict: 'org_id,user_id' })
   if (memberError) throw memberError
 
   // Mark accepted

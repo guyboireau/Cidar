@@ -1,6 +1,39 @@
 import { supabase } from '@/lib/supabase'
 import type { HttpMonitor } from '@/types'
 
+async function assertMonitorOwner(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Non authentifié')
+
+  const { data: monitor } = await supabase
+    .from('http_monitors')
+    .select('user_id, org_id')
+    .eq('id', id)
+    .single()
+
+  if (!monitor) throw new Error('Monitor introuvable')
+  if (monitor.user_id === user.id) return
+
+  if (monitor.org_id) {
+    const { data: member } = await supabase
+      .from('organization_members')
+      .select('role')
+      .eq('org_id', monitor.org_id)
+      .eq('user_id', user.id)
+      .single()
+    if (member) return
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('owner_id')
+      .eq('id', monitor.org_id)
+      .single()
+    if (org?.owner_id === user.id) return
+  }
+
+  throw new Error('Accès interdit')
+}
+
 export async function getMonitors(userId: string): Promise<HttpMonitor[]> {
   const { data, error } = await supabase
     .from('http_monitors')
@@ -25,6 +58,7 @@ export async function createMonitor(
 }
 
 export async function updateMonitor(id: string, updates: Partial<HttpMonitor>): Promise<HttpMonitor> {
+  await assertMonitorOwner(id)
   const { data, error } = await supabase
     .from('http_monitors')
     .update(updates)
@@ -36,6 +70,7 @@ export async function updateMonitor(id: string, updates: Partial<HttpMonitor>): 
 }
 
 export async function deleteMonitor(id: string): Promise<void> {
+  await assertMonitorOwner(id)
   const { error } = await supabase.from('http_monitors').delete().eq('id', id)
   if (error) throw error
 }
