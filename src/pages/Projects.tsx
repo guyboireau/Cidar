@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -46,7 +46,7 @@ export default function Projects() {
   const { data: githubRepos = [], isLoading: githubLoading } = useGithubRepos(dialogOpen && isConnected('github'))
   const { data: gitlabProjects = [], isLoading: gitlabLoading } = useGitlabProjects(dialogOpen && isConnected('gitlab'))
   const { data: vercelProjects = [], isLoading: vercelLoading } = useVercelProjects(dialogOpen && isConnected('vercel'))
-  const { data: cfResources } = useCloudflareResources(dialogOpen && isConnected('cloudflare'))
+  const { data: cfResources, isLoading: cfLoading } = useCloudflareResources(dialogOpen && isConnected('cloudflare'))
 
   const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),

@@ -27,7 +27,7 @@ async function assertOrgAccess(orgId: string, minRole: OrgRole = 'member'): Prom
     .eq('user_id', user.id)
     .single()
 
-  if (member && ROLE_HIERARCHY[member.role] >= ROLE_HIERARCHY[minRole]) return
+  if (member && ROLE_HIERARCHY[member.role as OrgRole] >= ROLE_HIERARCHY[minRole]) return
   throw new Error('Accès interdit')
 }
 
@@ -175,7 +175,7 @@ export async function inviteMember(
 }
 
 export async function revokeInvitation(invitationId: string): Promise<void> {
-  const user = await getCurrentUser()
+  await getCurrentUser()
   const { data: invitation } = await supabase
     .from('invitations')
     .select('org_id')
