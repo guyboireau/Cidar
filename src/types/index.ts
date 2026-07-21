@@ -321,3 +321,43 @@ export interface Subscription {
   created_at: string
   updated_at: string
 }
+
+export type CronRunStatus =
+  | 'pending'
+  | 'running'
+  | 'success'
+  | 'failure'
+  | 'cancelled'
+  | 'unknown'
+
+export interface CronRoutine {
+  id: string
+  user_id: string
+  org_id: string | null
+  name: string
+  description: string | null
+  github_owner: string
+  github_repo: string
+  workflow_file: string
+  enabled: boolean
+  cron_expression: string | null
+  config: Record<string, unknown>
+  last_run_at: string | null
+  last_run_status: CronRunStatus | null
+  last_run_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CronRun {
+  id: string
+  routine_id: string
+  user_id: string
+  github_run_id: number | null
+  trigger_source: 'manual' | 'scheduled'
+  status: CronRunStatus
+  html_url: string | null
+  started_at: string
+  finished_at: string | null
+  data: Record<string, unknown>
+}
