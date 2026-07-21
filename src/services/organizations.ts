@@ -175,7 +175,8 @@ export async function inviteMember(
 }
 
 export async function revokeInvitation(invitationId: string): Promise<void> {
-  const user = await getCurrentUser()
+  // Garde d'authentification : getCurrentUser lève si la session est absente.
+  await getCurrentUser()
   const { data: invitation } = await supabase
     .from('invitations')
     .select('org_id')

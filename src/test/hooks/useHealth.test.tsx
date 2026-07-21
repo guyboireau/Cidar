@@ -76,7 +76,7 @@ describe('useTriggerAllHealthChecks', () => {
   })
 
   it('déclenche une vérification complète', async () => {
-    vi.mocked(healthService.triggerAllHealthChecks).mockResolvedValueOnce(undefined)
+    vi.mocked(healthService.triggerAllHealthChecks).mockResolvedValueOnce([])
 
     const { result } = renderHook(() => useTriggerAllHealthChecks('user-123'), {
       wrapper: createWrapper(),
@@ -99,7 +99,7 @@ describe('useProjectHealthHistory', () => {
       eq: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockResolvedValueOnce({ data: mockHealthChecks, error: null }),
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useProjectHealthHistory('proj-1'), {
       wrapper: createWrapper(),

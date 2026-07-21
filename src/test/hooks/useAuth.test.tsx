@@ -86,7 +86,7 @@ describe('useProfile', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValueOnce({ data: mockProfile, error: null }),
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useProfile(mockUser), { wrapper: createWrapper() })
 
@@ -156,7 +156,7 @@ describe('useUpdateProfile', () => {
 
     vi.mocked(supabase.from).mockReturnValueOnce({
       update: updateMock,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useUpdateProfile('user-123'), { wrapper: createWrapper() })
 
