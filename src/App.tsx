@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const Projects = lazy(() => import('@/pages/Projects'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const Monitors = lazy(() => import('@/pages/Monitors'))
+const CronRoutines = lazy(() => import('@/pages/CronRoutines'))
 const StatusPages = lazy(() => import('@/pages/StatusPages'))
 const PublicStatus = lazy(() => import('@/pages/PublicStatus'))
 const Billing = lazy(() => import('@/pages/Billing'))
@@ -55,6 +56,7 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/monitors" element={<Monitors />} />
+                <Route path="/routines" element={<CronRoutines />} />
                 <Route path="/status-pages" element={<StatusPages />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/account" element={<Account />} />

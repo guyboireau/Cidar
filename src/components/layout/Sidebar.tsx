@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, FolderGit2, Settings, LogOut, Zap, Globe, LayoutGrid, Menu, X, CreditCard, Eye, Wrench, Accessibility, PenTool } from 'lucide-react'
+import { LayoutDashboard, FolderGit2, Settings, LogOut, Zap, Globe, LayoutGrid, Menu, X, CreditCard, Eye, Wrench, Accessibility, PenTool, Timer } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -20,6 +20,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/projects', icon: FolderGit2, label: 'Projets' },
   { to: '/monitors', icon: Globe, label: 'Moniteurs HTTP' },
+  { to: '/routines', icon: Timer, label: 'Routines' },
   { to: '/status-pages', icon: LayoutGrid, label: 'Status Pages' },
   { to: '/ux-audits', icon: Eye, label: 'Audit UX' },
   { to: '/accessibility', icon: Accessibility, label: 'AccessLens' },
