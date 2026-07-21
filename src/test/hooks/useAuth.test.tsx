@@ -43,7 +43,7 @@ describe('useSession', () => {
 
   it('retourne undefined au montage puis la session', async () => {
     const mockSession = { user: { id: 'user-123' } } as Session
-    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: mockSession } })
+    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: mockSession }, error: null })
 
     const { result } = renderHook(() => useSession())
 
@@ -57,7 +57,7 @@ describe('useSession', () => {
   })
 
   it('retourne null si pas de session', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: null } })
+    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: null }, error: null })
 
     const { result } = renderHook(() => useSession())
 
@@ -86,7 +86,7 @@ describe('useProfile', () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValueOnce({ data: mockProfile, error: null }),
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useProfile(mockUser), { wrapper: createWrapper() })
 
@@ -156,7 +156,7 @@ describe('useUpdateProfile', () => {
 
     vi.mocked(supabase.from).mockReturnValueOnce({
       update: updateMock,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useUpdateProfile('user-123'), { wrapper: createWrapper() })
 

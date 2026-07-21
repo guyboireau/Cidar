@@ -32,7 +32,10 @@ describe('signInWithEmail', () => {
 
   it('connecte un utilisateur avec email et mot de passe', async () => {
     const mockData = { session: { user: { id: 'user-123' } } }
-    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({ data: mockData, error: null })
+    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
+      data: mockData,
+      error: null,
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>)
 
     const result = await signInWithEmail('test@example.com', 'password123')
 
@@ -48,7 +51,7 @@ describe('signInWithEmail', () => {
     vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
       data: null,
       error: mockError,
-    })
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>)
 
     await expect(signInWithEmail('test@example.com', 'wrong')).rejects.toThrow('Invalid credentials')
   })
@@ -60,8 +63,11 @@ describe('signUpWithEmail', () => {
   })
 
   it('inscrit un nouvel utilisateur', async () => {
-    const mockData = { user: { id: 'new-user' } }
-    vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({ data: mockData, error: null })
+    const mockData = { user: { id: 'new-user' }, session: null }
+    vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({
+      data: mockData,
+      error: null,
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.signUp>>)
 
     const result = await signUpWithEmail('new@example.com', 'password123', 'John Doe')
 
@@ -74,8 +80,11 @@ describe('signUpWithEmail', () => {
   })
 
   it('inscrit sans nom si non fourni', async () => {
-    const mockData = { user: { id: 'new-user' } }
-    vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({ data: mockData, error: null })
+    const mockData = { user: { id: 'new-user' }, session: null }
+    vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({
+      data: mockData,
+      error: null,
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.signUp>>)
 
     await signUpWithEmail('new@example.com', 'password123')
 
@@ -102,7 +111,9 @@ describe('signOut', () => {
 
   it('lance une erreur si la déconnexion échoue', async () => {
     const mockError = new Error('Sign out failed')
-    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: mockError })
+    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({
+      error: mockError,
+    } as unknown as Awaited<ReturnType<typeof supabase.auth.signOut>>)
 
     await expect(signOut()).rejects.toThrow('Sign out failed')
   })
@@ -121,7 +132,7 @@ describe('getProfile', () => {
 
     vi.mocked(supabase.from).mockReturnValueOnce({
       select: selectMock,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const result = await getProfile('user-123')
 
@@ -138,7 +149,7 @@ describe('getProfile', () => {
 
     vi.mocked(supabase.from).mockReturnValueOnce({
       select: selectMock,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     await expect(getProfile('unknown')).rejects.toThrow('Not found')
   })
@@ -163,7 +174,7 @@ describe('updateProfile', () => {
 
     vi.mocked(supabase.from).mockReturnValueOnce({
       update: updateMock,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const result = await updateProfile('user-123', { name: 'New Name' })
 

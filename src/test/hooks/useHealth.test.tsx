@@ -44,10 +44,13 @@ const mockHealthChecks: HealthCheck[] = [
     project_id: 'proj-1',
     user_id: 'user-123',
     github_status: 'success',
+    github_data: null,
     gitlab_status: null,
+    gitlab_data: null,
     vercel_status: null,
+    vercel_data: null,
     cloudflare_status: null,
-    overall_status: 'success',
+    cloudflare_data: null,
     checked_at: '2024-03-15T10:00:00Z',
   },
 ]
@@ -58,7 +61,7 @@ describe('useTriggerHealthCheck', () => {
   })
 
   it('déclenche une vérification de santé', async () => {
-    vi.mocked(healthService.triggerHealthCheck).mockResolvedValueOnce(undefined)
+    vi.mocked(healthService.triggerHealthCheck).mockResolvedValueOnce(mockHealthChecks[0])
 
     const { result } = renderHook(() => useTriggerHealthCheck('user-123'), {
       wrapper: createWrapper(),
@@ -76,7 +79,7 @@ describe('useTriggerAllHealthChecks', () => {
   })
 
   it('déclenche une vérification complète', async () => {
-    vi.mocked(healthService.triggerAllHealthChecks).mockResolvedValueOnce(undefined)
+    vi.mocked(healthService.triggerAllHealthChecks).mockResolvedValueOnce([])
 
     const { result } = renderHook(() => useTriggerAllHealthChecks('user-123'), {
       wrapper: createWrapper(),
@@ -99,7 +102,7 @@ describe('useProjectHealthHistory', () => {
       eq: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockResolvedValueOnce({ data: mockHealthChecks, error: null }),
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useProjectHealthHistory('proj-1'), {
       wrapper: createWrapper(),

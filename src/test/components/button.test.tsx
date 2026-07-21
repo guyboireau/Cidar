@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Button } from '@/components/ui/button'
-import React from 'react'
 
 describe('Button', () => {
   it('rend un bouton avec le texte fourni', () => {
