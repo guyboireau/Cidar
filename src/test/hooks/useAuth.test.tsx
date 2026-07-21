@@ -43,7 +43,7 @@ describe('useSession', () => {
 
   it('retourne undefined au montage puis la session', async () => {
     const mockSession = { user: { id: 'user-123' } } as Session
-    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: mockSession } })
+    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: mockSession }, error: null })
 
     const { result } = renderHook(() => useSession())
 
@@ -57,7 +57,7 @@ describe('useSession', () => {
   })
 
   it('retourne null si pas de session', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: null } })
+    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({ data: { session: null }, error: null })
 
     const { result } = renderHook(() => useSession())
 

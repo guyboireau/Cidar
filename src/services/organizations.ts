@@ -27,7 +27,7 @@ async function assertOrgAccess(orgId: string, minRole: OrgRole = 'member'): Prom
     .eq('user_id', user.id)
     .single()
 
-  if (member && ROLE_HIERARCHY[member.role] >= ROLE_HIERARCHY[minRole]) return
+  if (member && ROLE_HIERARCHY[member.role as OrgRole] >= ROLE_HIERARCHY[minRole]) return
   throw new Error('Accès interdit')
 }
 
