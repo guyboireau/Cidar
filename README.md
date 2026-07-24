@@ -1,73 +1,104 @@
-# React + TypeScript + Vite
+# Vigilo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tableau de bord de supervision pour projets web : santé applicative, monitoring
+d'uptime, pages de statut publiques, audits (accessibilité, UX, style) et
+pilotage de routines automatisées (agents GitHub Actions). Multi-organisations,
+facturation Stripe intégrée.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Domaine       | Techno                                                        |
+|---------------|---------------------------------------------------------------|
+| Framework     | React 19 + Vite 8 (SPA)                                        |
+| Langage       | TypeScript (strict)                                            |
+| UI            | Tailwind CSS 4 + Radix UI + lucide-react + sonner (toasts)     |
+| Data / cache  | @tanstack/react-query                                          |
+| Formulaires   | react-hook-form + Zod                                          |
+| Routing       | react-router-dom                                              |
+| Backend       | Supabase (PostgreSQL, Auth, RLS, Edge Functions)              |
+| Paiement      | Stripe (via Edge Functions)                                   |
+| Tests         | Vitest + Testing Library (jsdom)                              |
+| Déploiement   | Vercel                                                        |
 
-## React Compiler
+Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@10.33.2`). La version
+est fixée par le champ `packageManager` — ne pas la redéclarer dans la CI.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Fonctionnalités
 
-## Expanding the ESLint configuration
+- **Dashboard** — vue agrégée de l'état des projets suivis.
+- **Health checks & monitors** — sondes HTTP, historique de disponibilité.
+- **Status pages** — pages de statut publiques par projet.
+- **Audits** — accessibilité, UX et garde de style (style guard).
+- **Cron routines** — pilotage de workflows / agents GitHub Actions depuis l'app.
+- **Intégrations** — GitHub, GitLab, Vercel, Cloudflare (OAuth).
+- **Organisations** — espaces multi-utilisateurs avec rôles.
+- **Billing** — abonnements Stripe (checkout + webhook).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```
+src/
+├── components/   # ui/ (Radix + primitives), layout/, features/
+├── contexts/     # OrgContext (organisation courante), Auth
+├── hooks/        # hooks data (react-query) par domaine
+├── lib/          # client Supabase, utilitaires
+├── pages/        # une page par route (Dashboard, Monitors, StatusPages…)
+├── services/     # accès données par domaine (health, monitors, billing…)
+├── types/        # types partagés
+└── test/         # tests co-localisés par dossier
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+supabase/
+├── migrations/   # schéma versionné (001 → 012)
+└── functions/    # Edge Functions (health-check, http-monitor,
+                  #   dispatch-workflow, stripe-webhook, oauth-callback…)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables d'environnement
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copier `.env.example` vers `.env` et renseigner :
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Supabase (Settings > API)
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+
+# OAuth frontend (public, embarqué dans le build)
+VITE_GITHUB_CLIENT_ID=
+VITE_GITLAB_CLIENT_ID=
+VITE_VERCEL_CLIENT_ID=
 ```
+
+Les secrets serveur (clés Stripe, service role Supabase, secrets OAuth) sont
+configurés côté Supabase Edge Functions / Vercel, jamais préfixés `VITE_`.
+
+> Le client Supabase (`src/lib/supabase.ts`) **lève une erreur au chargement**
+> si `VITE_SUPABASE_URL` ou `VITE_SUPABASE_ANON_KEY` manquent. En test, la CI
+> fournit des valeurs mock (`https://mock-url.supabase.co` / `mock-anon-key`).
+
+## Commandes
+
+```bash
+pnpm install          # Installer les dépendances
+pnpm dev              # Serveur de développement (Vite)
+pnpm build            # Build production (tsc -b && vite build)
+pnpm preview          # Prévisualiser le build
+pnpm lint             # ESLint
+pnpm test             # Vitest (run unique)
+pnpm test:watch       # Vitest (watch)
+pnpm test:coverage    # Vitest + couverture
+```
+
+Pour lancer les tests en local sans base réelle, fournir les valeurs mock :
+
+```bash
+VITE_SUPABASE_URL=https://mock-url.supabase.co \
+VITE_SUPABASE_ANON_KEY=mock-anon-key \
+pnpm test
+```
+
+## CI / Déploiement
+
+- **CI** (GitHub Actions) : lint → type-check → build → tests, avec des
+  `VITE_SUPABASE_*` mock injectées à l'étape de test.
+- **Déploiement** : Vercel exécute le script `build` du `package.json`
+  (`vercel.json` n'override pas la commande de build).
