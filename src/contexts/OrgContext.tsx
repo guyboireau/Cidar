@@ -49,13 +49,11 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
       return
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true)
     /* eslint-enable react-hooks/set-state-in-effect */
     loadOrgs(session.user.id, profile?.current_org_id)
   }, [session?.user?.id, profile?.current_org_id, loadOrgs])
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const switchOrg = useCallback(async (orgId: string) => {
     if (!userIdRef) return
     const org = orgs.find(o => o.id === orgId)
@@ -65,7 +63,6 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     queryClient.invalidateQueries()
   }, [userIdRef, orgs, queryClient])
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const refreshOrgs = useCallback(async () => {
     if (!userIdRef) return
     await loadOrgs(userIdRef, currentOrg?.id)
