@@ -15,6 +15,13 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // src/lib/supabase.ts lève au chargement du module si ces variables manquent.
+    // Les fournir ici rend `pnpm test` reproductible sans .env local et garantit
+    // qu'un test ne pointe jamais vers une vraie instance Supabase.
+    env: {
+      VITE_SUPABASE_URL: 'https://mock-url.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'mock-anon-key',
+    },
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     coverage: {
