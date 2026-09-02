@@ -72,8 +72,10 @@ Les secrets serveur (clés Stripe, service role Supabase, secrets OAuth) sont
 configurés côté Supabase Edge Functions / Vercel, jamais préfixés `VITE_`.
 
 > Le client Supabase (`src/lib/supabase.ts`) **lève une erreur au chargement**
-> si `VITE_SUPABASE_URL` ou `VITE_SUPABASE_ANON_KEY` manquent. En test, la CI
-> fournit des valeurs mock (`https://mock-url.supabase.co` / `mock-anon-key`).
+> si `VITE_SUPABASE_URL` ou `VITE_SUPABASE_ANON_KEY` manquent. En test, ces
+> valeurs mock (`https://mock-url.supabase.co` / `mock-anon-key`) sont fournies
+> par `test.env` dans `vite.config.ts` : aucun `.env` n'est nécessaire pour
+> lancer la suite, et un test ne peut pas viser une vraie instance Supabase.
 
 ## Commandes
 
@@ -88,17 +90,13 @@ pnpm test:watch       # Vitest (watch)
 pnpm test:coverage    # Vitest + couverture
 ```
 
-Pour lancer les tests en local sans base réelle, fournir les valeurs mock :
-
-```bash
-VITE_SUPABASE_URL=https://mock-url.supabase.co \
-VITE_SUPABASE_ANON_KEY=mock-anon-key \
-pnpm test
-```
+`pnpm test` fonctionne tel quel sur un clone neuf : aucune variable
+d'environnement à exporter.
 
 ## CI / Déploiement
 
-- **CI** (GitHub Actions) : lint → type-check → build → tests, avec des
-  `VITE_SUPABASE_*` mock injectées à l'étape de test.
+- **CI** (GitHub Actions) : lint → type-check → build → tests, sur Node 22.
+  Les `VITE_SUPABASE_*` mock sont injectées à l'étape de build (Vite les
+  substitue à la compilation) ; l'étape de test les tient de `test.env`.
 - **Déploiement** : Vercel exécute le script `build` du `package.json`
   (`vercel.json` n'override pas la commande de build).
