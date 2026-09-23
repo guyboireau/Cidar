@@ -1,4 +1,8 @@
-# Vigilo
+# Cidar
+
+> Cidar est le nom du dépôt GitHub et celui qu'affiche l'interface, sauf la
+> page Routines qui dit encore « Vigilo ». `vigilo`, le nom d'origine du
+> projet, reste celui du `package.json`.
 
 Tableau de bord de supervision pour projets web : santé applicative, monitoring
 d'uptime, pages de statut publiques, audits (accessibilité, UX, style) et
@@ -18,7 +22,7 @@ facturation Stripe intégrée.
 | Backend       | Supabase (PostgreSQL, Auth, RLS, Edge Functions)              |
 | Paiement      | Stripe (via Edge Functions)                                   |
 | Tests         | Vitest + Testing Library (jsdom)                              |
-| Déploiement   | Vercel                                                        |
+| Déploiement   | Vercel (production figée depuis mai, voir plus bas)           |
 
 Gestionnaire de paquets : **pnpm** (`packageManager: pnpm@10.33.2`). La version
 est fixée par le champ `packageManager` — ne pas la redéclarer dans la CI.
@@ -65,8 +69,11 @@ VITE_SUPABASE_ANON_KEY=
 # OAuth frontend (public, embarqué dans le build)
 VITE_GITHUB_CLIENT_ID=
 VITE_GITLAB_CLIENT_ID=
-VITE_VERCEL_CLIENT_ID=
 ```
+
+`VITE_VERCEL_CLIENT_ID`, encore présente dans `.env.example`, n'est lue nulle
+part : côté front, Vercel passe par la page d'installation de l'intégration
+(`src/pages/Settings.tsx`).
 
 Les secrets serveur (clés Stripe, service role Supabase, secrets OAuth) sont
 configurés côté Supabase Edge Functions / Vercel, jamais préfixés `VITE_`.
@@ -100,3 +107,6 @@ d'environnement à exporter.
   substitue à la compilation) ; l'étape de test les tient de `test.env`.
 - **Déploiement** : Vercel exécute le script `build` du `package.json`
   (`vercel.json` n'override pas la commande de build).
+- **État au 23 septembre 2026** : la production n'est plus mise à jour. Son
+  dernier déploiement date du 6 mai 2026 (`a8cbcb1`) ; aucun des commits
+  poussés sur `main` depuis n'a été déployé en production.

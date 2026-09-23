@@ -55,8 +55,9 @@ Ces variables sont publiques (préfixées `VITE_`) et embarquées dans le build 
 ```bash
 VITE_GITHUB_CLIENT_ID=xxx
 VITE_GITLAB_CLIENT_ID=xxx
-VITE_VERCEL_CLIENT_ID=xxx
 ```
+
+Vercel n'a pas de variable côté front : le bouton « Connecter » renvoie vers la page d'installation de l'intégration (`src/pages/Settings.tsx`).
 
 ### Edge Functions Secrets (Supabase Dashboard)
 
