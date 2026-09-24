@@ -78,6 +78,21 @@ part : côté front, Vercel passe par la page d'installation de l'intégration
 Les secrets serveur (clés Stripe, service role Supabase, secrets OAuth) sont
 configurés côté Supabase Edge Functions / Vercel, jamais préfixés `VITE_`.
 
+Secrets des Edge Functions, configurés côté Supabase (`supabase secrets set`),
+jamais dans `.env` — relevés dans les `Deno.env.get` de `supabase/functions/` :
+
+| Secret | Fonctions concernées |
+|--------|----------------------|
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | toutes |
+| `SUPABASE_ANON_KEY` | `create-checkout-session` |
+| `STRIPE_SECRET_KEY` | `create-checkout-session`, `stripe-webhook` |
+| `STRIPE_WEBHOOK_SECRET` | `stripe-webhook` |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | `oauth-callback` |
+| `GITLAB_CLIENT_ID` / `GITLAB_CLIENT_SECRET` | `oauth-callback` |
+| `VERCEL_CLIENT_ID` / `VERCEL_CLIENT_SECRET` | `oauth-callback`, `vercel-exchange` |
+| `APP_URL` | `oauth-callback`, `vercel-exchange` |
+| `RESEND_API_KEY` | `health-check`, `http-monitor` (alertes e-mail) |
+
 > Le client Supabase (`src/lib/supabase.ts`) **lève une erreur au chargement**
 > si `VITE_SUPABASE_URL` ou `VITE_SUPABASE_ANON_KEY` manquent. En test, ces
 > valeurs mock (`https://mock-url.supabase.co` / `mock-anon-key`) sont fournies
